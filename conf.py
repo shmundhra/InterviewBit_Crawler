@@ -1,8 +1,8 @@
 # Credentialle tutti makaagrna.
 USERNAME_KEY    = 'user[email]'
-USERNAME_VAL    # = Email you signed up with
+USERNAME_VAL    = ""
 PASSWORD_KEY    = 'user[password]'
-PASSWORD_VAL    # = Your interviewbit password
+PASSWORD_VAL    = ""
 AUTH_TOKEN_KEY  = 'authenticity_token'
 AUTH_TOKEN_VAL  = ''
 UTF8_KEY        = 'utf8'

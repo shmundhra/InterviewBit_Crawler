@@ -16,7 +16,7 @@ def set_auth_token(html_response):
 	rgx_token_val = '<input type="hidden" name="authenticity_token" value="(.*?)"'
 	line_list = [x.strip() for x in html_response.splitlines()]
 	for line in line_list:
-		if(re.search(rgx_line, line)): break
+		if(re.search(rgx_token_val, line)): break
 	# first match of regex. hopefully the only match.
 	conf.AUTH_TOKEN_VAL = re.search(rgx_token_val, line).group(1)
 
@@ -60,16 +60,15 @@ def fetch_topics(session, MAIN_URL):
 		if(stat == TOPIC_UNLOCKED):
 			Topic.instances.append(Topic(name, link))
 
-
 ### ------------------------- PROBLEM LINKS BELOW ------------------------ ###
 # fetches all the solved problem links from 
 # https://www.interviewbit.com/courses/programming/topics/<topic name>/
 # adds problem links to corresponding Topic objects. 
 def fetch_problems(session):
 	# Search the regex strings in html file for clarification.
-	rgx_link = re.compile('<a class="locked".*?href="(.*?)">', re.S)
+	rgx_link = re.compile('<a class="locked problem_title".*?href="(.*?)">', re.S)
 	rgx_stat = re.compile('<td>\n\s*(.*?)\s*</td>\n\s*</tr>', re.S)
-	PROBLEM_SOLVED = 'Solved'
+	PROBLEM_SOLVED = 'solved'
 
 	for topic in Topic.instances:
 		url = URL.BASE + topic.link
@@ -79,7 +78,7 @@ def fetch_problems(session):
 		# get links and statuses
 		links = rgx_link.findall(page)
 		stats = [PROBLEM_SOLVED in x for x in rgx_stat.findall(page)]
-		topic.problems = {l for s, l in zip(stats, links) if s}
+		topic.problems = {l for s, l in zip(stats, links) }
 		time.sleep(0.2)
 	print()
 
@@ -102,16 +101,27 @@ def copy_problems(session):
 		os.chdir(topic.name) # go down #2
 		for problem_link in topic.problems:
 			url = URL.BASE + problem_link
-			cpp_name = Topic.local_problem_name(problem_link)			
-			print('\tproblem: {:<50}'.format(cpp_name), end = '')
+			cpp_name = Topic.local_problem_name(problem_link)
+
+			name_list = cpp_name.split('-')
+			file_name = ""
+			for i in range ( 0 , len(name_list) ):
+				file_name += name_list[i].capitalize() + "_"
+			file_name = file_name[:-1]
+			
+
+			print('\tproblem: {:<50}'.format(file_name), end = '')
 			# get response from the server | turn it into html file as string
 			page = session.get(url); page = page.text
 			# unescapes stuff like &lt &gt | rgx.srch(x).grp(1) = first match
 			cpp_code = html.unescape(rgx_cpp_code.search(page).group(1))
+
+			cpp_code = "// " + url + "\n\n" + cpp_code
+
 			problem_count += 1
 			print('...done')
 			# create a file & paste the code.
-			with open(cpp_name, 'w') as out:
+			with open(file_name, 'w') as out:
 				out.write(cpp_code)
 			time.sleep(0.2)
 		print()
@@ -119,3 +129,7 @@ def copy_problems(session):
 	os.chdir('..') # go up #1
 	print('Everything\'s done.')
 	print(f'Number of solved problems:{problem_count}')
+
+
+
+
