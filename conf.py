@@ -12,7 +12,6 @@ BUTTON_VAL      = 'Log in'
 CHECK_BOX_KEY   = 'user[remember_me]'
 CHECK_BOX_VAL   = '1'
 
-
-### NOTES : 
+# NOTES :
 
 # change the script name to conf.py before running crawl script
